@@ -10,7 +10,7 @@
   },
   "servers": [
     {
-      "url": "http://sandbox.mintlify.com"
+      "url": "http://trng-api.partssource.com/customer/api/v1"
     }
   ],
   "security": [
@@ -19,12 +19,12 @@
     }
   ],
   "paths": {
-    "/api/v1/Assets": {
+    "/assets": {
       "get": {
         "tags": [
           "Assets"
         ],
-        "summary": "Retrieve customer assets with optional date filtering",
+        "summary": "Get assets",
         "parameters": [
           {
             "name": "modifiedSince",
@@ -92,7 +92,7 @@
         "tags": [
           "Assets"
         ],
-        "summary": "Create a new asset record in the system (where allowed)",
+        "summary": "Create an asset",
         "requestBody": {
           "description": "The asset creation request",
           "content": {
@@ -149,12 +149,12 @@
         }
       }
     },
-    "/api/v1/Assets/changes": {
+    "/assets/changes": {
       "get": {
         "tags": [
           "Assets"
         ],
-        "summary": "Return a delta set of assets modified within a given date range",
+        "summary": "Get assets changes",
         "parameters": [
           {
             "name": "modifiedSince",
@@ -217,12 +217,12 @@
         }
       }
     },
-    "/api/v1/Assets/{id}": {
+    "/assets/{id}": {
       "get": {
         "tags": [
           "Assets"
         ],
-        "summary": "Retrieve detailed information about a specific asset",
+        "summary": "Get an asset",
         "parameters": [
           {
             "name": "id",
@@ -271,7 +271,7 @@
         "tags": [
           "Assets"
         ],
-        "summary": "Update metadata or status of an existing asset",
+        "summary": "Update an asset",
         "parameters": [
           {
             "name": "id",
@@ -342,7 +342,7 @@
     }
   },
   "webhooks": {
-    "/plant/webhook": {
+    "/webhook": {
       "post": {
         "description": "Information about a new plant added to the store",
         "requestBody": {

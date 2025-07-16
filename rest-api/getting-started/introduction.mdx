@@ -1,0 +1,53 @@
+# Introduction
+
+Welcome to our REST API documentation! This guide will help you understand how to integrate with our platform programmatically.
+
+## What is the REST API?
+
+Our REST API provides a standardized way to interact with our platform's services and data. It follows REST (Representational State Transfer) principles, making it easy to build applications that can create, read, update, and delete resources.
+
+## Key Features
+
+- **RESTful Design**: Follows standard HTTP methods and status codes
+- **JSON Format**: All requests and responses use JSON for easy parsing
+- **Authentication**: Secure API key-based authentication
+- **Rate Limiting**: Built-in protection against abuse
+- **Comprehensive Error Handling**: Clear error messages and status codes
+
+## Base URL
+
+All API requests should be made to:
+
+```
+https://api.example.com/v1
+```
+
+## HTTP Methods
+
+Our API supports the following HTTP methods:
+
+- `GET` - Retrieve data
+- `POST` - Create new resources
+- `PUT` - Update existing resources (full update)
+- `PATCH` - Partially update resources
+- `DELETE` - Remove resources
+
+## Response Format
+
+All API responses are returned in JSON format with the following structure:
+
+```json
+{
+  "success": true,
+  "data": {
+    // Response data here
+  },
+  "message": "Optional message"
+}
+```
+
+## Next Steps
+
+- [Authentication](./authentication.mdx) - Learn how to authenticate your requests
+- [Rate Limits](./rate-limits.mdx) - Understand API usage limits
+- [Error Handling](./errors.mdx) - Learn how to handle API errors
