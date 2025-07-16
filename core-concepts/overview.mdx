@@ -1,0 +1,265 @@
+---
+title: "Overview"
+description: "Understanding the fundamental concepts of our platform"
+---
+
+This guide introduces the fundamental concepts you need to understand to work effectively with our platform. Whether you're building integrations, managing orders, or processing invoices, these concepts form the foundation of everything we do.
+
+## Platform Overview
+
+Our platform is designed to streamline business operations through a comprehensive API that handles orders, invoices, assets, and real-time notifications. We provide a RESTful API with webhook support for real-time event processing.
+
+## Authentication & Security
+
+### Bearer Token Authentication
+
+All API requests require authentication using Bearer tokens. This ensures secure access to your data and operations.
+
+**Key Concepts:**
+- **Access Tokens**: Long-lived tokens for API access
+- **Token Scopes**: Granular permissions (read, write, delete, admin)
+- **Security**: HTTPS-only communication with signature verification
+
+**Example:**
+```http
+Authorization: Bearer YOUR_ACCESS_TOKEN_HERE
+```
+
+### Webhook Security
+
+Webhooks use cryptographic signatures to verify authenticity:
+
+```javascript
+// Verify webhook signatures
+const signature = headers["svix-signature"];
+const isValid = verifyWebhook(payload, headers, secret);
+```
+
+## Data Flow Architecture
+
+### Request-Response Pattern
+
+Our API follows standard REST principles:
+
+1. **Client Request**: Send HTTP requests with authentication
+2. **Server Processing**: Validate, process, and respond
+3. **Response**: Return structured JSON data with status codes
+
+### Real-Time Event Processing
+
+Webhooks enable real-time event notifications:
+
+1. **Event Occurs**: Order shipped, invoice issued, etc.
+2. **Webhook Triggered**: Platform sends HTTP POST to your endpoint
+3. **Your System Processes**: Handle the event data asynchronously
+4. **Acknowledge**: Return 2xx status to confirm receipt
+
+## Core Resources
+
+### Orders
+
+Orders represent customer purchases and transactions:
+
+**Key Properties:**
+- `order_id`: Unique identifier
+- `customer_id`: Associated customer
+- `order_type`: Type of order (punchout, blind PO, etc.)
+- `status`: Current order status
+- `line_items`: Products and quantities
+
+**Lifecycle:**
+1. **Created** → `order.created` webhook
+2. **Processing** → Internal processing
+3. **Exception** → `order.exception.created` (if issues)
+4. **Resolved** → `order.exception.resolved` (if issues fixed)
+5. **Shipped** → `order.shipped` webhook
+
+### Invoices
+
+Invoices represent billing documents for orders:
+
+**Key Properties:**
+- `invoice_id`: Unique identifier
+- `order_id`: Associated order
+- `invoice_number`: Human-readable number
+- `total_amount`: Billing amount
+- `due_date`: Payment deadline
+
+**Events:**
+- `invoice.issued`: New invoice available
+
+### Assets
+
+Assets represent physical or digital resources:
+
+**Key Properties:**
+- `asset_id`: Unique identifier
+- `asset_type`: Type of asset (equipment, software, etc.)
+- `status`: Current status (in_storage, deployed, etc.)
+- `metadata`: Additional properties
+- `linked_orders`: Associated orders
+
+**Events:**
+- `asset.updated`: Asset record modified
+
+## Error Handling
+
+### HTTP Status Codes
+
+We use standard HTTP status codes:
+
+- **2xx Success**: Request completed successfully
+- **4xx Client Errors**: Invalid requests, authentication issues
+- **5xx Server Errors**: Internal server problems
+
+### Error Response Format
+
+All errors follow a consistent structure:
+
+```json
+{
+  "error": {
+    "code": "ERROR_CODE",
+    "message": "Human-readable description",
+    "details": {
+      "field": "Additional context"
+    },
+    "request_id": "req_1234567890abcdef",
+    "timestamp": "2024-01-15T10:30:00Z"
+  }
+}
+```
+
+### Common Error Scenarios
+
+1. **Authentication Errors**: Invalid or expired tokens
+2. **Validation Errors**: Invalid request data
+3. **Rate Limiting**: Too many requests
+4. **Resource Not Found**: Requested resource doesn't exist
+
+## Rate Limiting
+
+### Request Limits
+
+API requests are subject to rate limiting:
+
+- **Standard Plan**: 1,000 requests per hour
+- **Professional Plan**: 10,000 requests per hour
+- **Enterprise Plan**: Custom limits
+
+### Rate Limit Headers
+
+Response headers include rate limit information:
+
+```http
+X-RateLimit-Limit: 1000
+X-RateLimit-Remaining: 999
+X-RateLimit-Reset: 1642233600
+```
+
+## Webhook Events
+
+### Event Types
+
+Our platform supports these webhook events:
+
+| Event | Description | Use Case |
+|-------|-------------|----------|
+| `order.shipped` | Order items shipped | Update inventory, notify customers |
+| `order.exception.created` | Issue with order | Alert support, update status |
+| `order.exception.resolved` | Issue resolved | Resume processing, notify customer |
+| `invoice.issued` | New invoice available | Trigger billing processes |
+| `order.created` | New order created | Update systems, start processing |
+| `asset.updated` | Asset record modified | Update asset tracking |
+
+### Webhook Payload Structure
+
+All webhooks follow this structure:
+
+```json
+{
+  "event": "event.type",
+  "data": {
+    // Event-specific data
+  }
+}
+```
+
+## Best Practices
+
+### API Usage
+
+1. **Cache Responses**: Cache data when appropriate
+2. **Handle Errors Gracefully**: Implement proper error handling
+3. **Use Pagination**: Handle large datasets efficiently
+4. **Monitor Rate Limits**: Stay within your plan limits
+
+### Webhook Handling
+
+1. **Respond Quickly**: Return 2xx status immediately
+2. **Process Asynchronously**: Handle webhook data in background
+3. **Verify Signatures**: Always verify webhook authenticity
+4. **Handle Duplicates**: Design idempotent handlers
+5. **Monitor Logs**: Track webhook delivery and processing
+
+### Security
+
+1. **Secure Token Storage**: Use environment variables
+2. **HTTPS Only**: Never make requests over HTTP
+3. **Token Rotation**: Regularly rotate access tokens
+4. **Monitor Usage**: Track API usage and token activity
+
+## Integration Patterns
+
+### Order Management
+
+```javascript
+// 1. Create order
+const order = await api.post('/orders', orderData);
+
+// 2. Listen for webhooks
+app.post('/webhook', async (req, res) => {
+  if (req.body.event === 'order.shipped') {
+    await updateInventory(req.body.data);
+  }
+  res.status(200).send('OK');
+});
+```
+
+### Invoice Processing
+
+```javascript
+// 1. Listen for invoice events
+app.post('/webhook', async (req, res) => {
+  if (req.body.event === 'invoice.issued') {
+    await processInvoice(req.body.data);
+  }
+  res.status(200).send('OK');
+});
+
+// 2. Download invoice
+const invoice = await api.get(`/invoices/${invoiceId}/download`);
+```
+
+### Asset Tracking
+
+```javascript
+// 1. Listen for asset updates
+app.post('/webhook', async (req, res) => {
+  if (req.body.event === 'asset.updated') {
+    await updateAssetRecord(req.body.data);
+  }
+  res.status(200).send('OK');
+});
+
+// 2. Query asset status
+const asset = await api.get(`/assets/${assetId}`);
+```
+
+## Next Steps
+
+- [API Reference](/api-reference/) - Explore the complete API documentation
+- [Authentication](/api-reference/getting-started/authentication/) - Learn about authentication
+- [Webhooks](/integrations/webhooks/) - Set up real-time notifications
+- [Error Handling](/api-reference/getting-started/errors/) - Handle errors properly
+- [Rate Limits](/api-reference/getting-started/rate-limits/) - Understand usage limits
