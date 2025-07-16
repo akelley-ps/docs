@@ -1,0 +1,467 @@
+---
+description: Integrate with our systems in real-time
+---
+
+Our platform uses webhooks to push real-time notifications when events occur. This allows your systems to automatically process extraction results without polling the API.
+
+## Configuring Webhooks
+
+### 1. Create an Endpoint
+
+First, create an endpoint in your application that can receive HTTP POST requests. This endpoint will receive the webhook payloads from our platform.
+
+For testing, you can use [Svix Play](https://play.svix.com/) to quickly set up a temporary webhook endpoint.
+
+### 2. Add the Endpoint to Our Platform
+
+Navigate to your workspace settings in the dashboard. Under the "Webhooks" section, add your endpoint URL and select the events you want to receive:
+
+- **Endpoint URL**: Your webhook endpoint URL
+- **Events**: Select which events you want to receive
+- **Secret**: Generate a webhook secret for signature verification
+
+### 3. Send a Test Event
+
+You can send a test event to verify your webhook setup:
+
+1. In the webhook configuration, click "Send Test Event"
+2. Check your endpoint logs to confirm receipt
+3. Verify the webhook signature to ensure security
+
+## Webhook Events
+
+Our platform supports the following webhook events:
+
+### order.shipped
+
+Notifies customer when one or more line items have shipped, including tracking info.
+
+```json
+{
+  "event": "order.shipped",
+  "data": {
+    "order_id": "ord_1234567890abcdef",
+    "customer_id": "cust_9876543210fedcba",
+    "shipped_at": "2024-01-15T10:30:00Z",
+    "tracking_info": {
+      "carrier": "FedEx",
+      "tracking_number": "794658123456",
+      "estimated_delivery": "2024-01-18T14:00:00Z"
+    },
+    "line_items": [
+      {
+        "item_id": "item_001",
+        "quantity": 2,
+        "shipped_quantity": 2,
+        "product_name": "Wireless Headphones"
+      }
+    ],
+    "shipping_address": {
+      "name": "John Doe",
+      "street": "123 Main St",
+      "city": "Anytown",
+      "state": "CA",
+      "zip": "90210"
+    }
+  }
+}
+```
+
+### order.exception.created
+
+Notifies customer that an issue (e.g., variant required, stock problem) has been raised.
+
+```json
+{
+  "event": "order.exception.created",
+  "data": {
+    "order_id": "ord_1234567890abcdef",
+    "exception_id": "exc_abcdef1234567890",
+    "exception_type": "stock_unavailable",
+    "message": "Item is currently out of stock",
+    "created_at": "2024-01-15T09:15:00Z",
+    "line_items": [
+      {
+        "item_id": "item_002",
+        "quantity": 1,
+        "product_name": "Premium Mouse",
+        "issue": "Insufficient stock available"
+      }
+    ],
+    "estimated_resolution": "2024-01-20T00:00:00Z"
+  }
+}
+```
+
+### order.exception.resolved
+
+Notifies customer that the issue has been addressed and order processing is continuing.
+
+```json
+{
+  "event": "order.exception.resolved",
+  "data": {
+    "order_id": "ord_1234567890abcdef",
+    "exception_id": "exc_abcdef1234567890",
+    "resolved_at": "2024-01-16T14:30:00Z",
+    "resolution": "Stock replenished and order will ship within 24 hours",
+    "line_items": [
+      {
+        "item_id": "item_002",
+        "quantity": 1,
+        "product_name": "Premium Mouse",
+        "status": "ready_to_ship"
+      }
+    ],
+    "updated_estimated_delivery": "2024-01-22T14:00:00Z"
+  }
+}
+```
+
+### invoice.issued
+
+Indicates a new invoice is available for download or review.
+
+```json
+{
+  "event": "invoice.issued",
+  "data": {
+    "invoice_id": "inv_5678901234abcdef",
+    "order_id": "ord_1234567890abcdef",
+    "invoice_number": "INV-2024-001",
+    "issued_at": "2024-01-15T16:45:00Z",
+    "due_date": "2024-02-14T23:59:59Z",
+    "total_amount": 299.99,
+    "currency": "USD",
+    "download_url": "https://api.example.com/invoices/inv_5678901234abcdef/download",
+    "line_items": [
+      {
+        "description": "Wireless Headphones",
+        "quantity": 2,
+        "unit_price": 149.99,
+        "total": 299.98
+      }
+    ]
+  }
+}
+```
+
+### order.created
+
+Notifies customer that an order has been created (e.g., via blind PO or punchout session).
+
+```json
+{
+  "event": "order.created",
+  "data": {
+    "order_id": "ord_1234567890abcdef",
+    "customer_id": "cust_9876543210fedcba",
+    "order_number": "ORD-2024-001",
+    "created_at": "2024-01-15T08:30:00Z",
+    "order_type": "punchout",
+    "total_amount": 299.99,
+    "currency": "USD",
+    "line_items": [
+      {
+        "item_id": "item_001",
+        "product_name": "Wireless Headphones",
+        "quantity": 2,
+        "unit_price": 149.99,
+        "total": 299.98
+      }
+    ],
+    "billing_address": {
+      "name": "Acme Corp",
+      "street": "456 Business Ave",
+      "city": "Business City",
+      "state": "NY",
+      "zip": "10001"
+    }
+  }
+}
+```
+
+### asset.updated
+
+Alerts customer that an asset record has been modified (e.g., status, metadata, linkage).
+
+```json
+{
+  "event": "asset.updated",
+  "data": {
+    "asset_id": "ast_abcdef1234567890",
+    "asset_type": "equipment",
+    "updated_at": "2024-01-15T11:20:00Z",
+    "changes": {
+      "status": {
+        "from": "in_storage",
+        "to": "deployed"
+      },
+      "location": {
+        "from": "Warehouse A",
+        "to": "Office Building B"
+      }
+    },
+    "metadata": {
+      "serial_number": "SN123456789",
+      "model": "Dell Latitude 5520",
+      "assigned_to": "john.doe@company.com"
+    },
+    "linked_orders": ["ord_1234567890abcdef"]
+  }
+}
+```
+
+## Webhook Security
+
+We sign all webhook requests with a signature in the `svix-signature` header. You can use this signature to verify that the webhook is genuinely from our platform.
+
+### Signature Verification
+
+```javascript
+// Example signature verification in Node.js
+const crypto = require("crypto");
+
+function verifyWebhook(payload, headers, secret) {
+  const signature = headers["svix-signature"];
+  if (!signature) return false;
+
+  const hmac = crypto.createHmac("sha256", secret);
+  const digest = hmac.update(payload).digest("hex");
+
+  return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(digest));
+}
+
+// Usage example
+app.post('/webhook', (req, res) => {
+  const payload = JSON.stringify(req.body);
+  const isValid = verifyWebhook(payload, req.headers, process.env.WEBHOOK_SECRET);
+  
+  if (!isValid) {
+    return res.status(401).send('Invalid signature');
+  }
+  
+  // Process the webhook
+  res.status(200).send('OK');
+});
+```
+
+## Transforming and Filtering Webhooks
+
+You can transform webhook payloads or filter webhooks based on their content before they're sent to your endpoint.
+
+### Enabling Transformations
+
+To add a transformation, select "Enable" and "Edit transformation" under the "Advanced" tab of an endpoint configuration.
+
+### Transform
+
+You can modify the webhook payload to match your system's requirements:
+
+```javascript
+function handler(webhook) {
+  // Add custom properties
+  webhook.payload.customProperty = "Custom Value";
+
+  // Transform order events
+  if (webhook.payload.event === 'order.shipped') {
+    webhook.payload.data.tracking_url = `https://tracking.example.com/${webhook.payload.data.tracking_info.tracking_number}`;
+  }
+
+  // Transform invoice events
+  if (webhook.payload.event === 'invoice.issued') {
+    webhook.payload.data.payment_terms = "Net 30";
+    webhook.payload.data.currency_symbol = "$";
+  }
+
+  // Transform asset events
+  if (webhook.payload.event === 'asset.updated') {
+    webhook.payload.data.change_summary = `Asset ${webhook.payload.data.asset_id} status changed from ${webhook.payload.data.changes.status.from} to ${webhook.payload.data.changes.status.to}`;
+  }
+
+  return webhook;
+}
+```
+
+### Filter
+
+You can filter webhooks based on their content to only receive specific notifications:
+
+```javascript
+function handler(webhook) {
+  // Only receive order-related webhooks
+  if (!webhook.payload.event.startsWith('order.')) {
+    webhook.cancel = true;
+  }
+
+  // Only receive webhooks for specific order types
+  if (webhook.payload.event === 'order.created' && 
+      webhook.payload.data.order_type !== 'punchout') {
+    webhook.cancel = true;
+  }
+
+  // Only receive webhooks for specific customers
+  if (webhook.payload.data.customer_id !== 'cust_9876543210fedcba') {
+    webhook.cancel = true;
+  }
+
+  return webhook;
+}
+```
+
+## Webhook Retries
+
+If your endpoint returns a non-2xx status code, we will automatically retry the webhook delivery with exponential backoff:
+
+- **First retry**: 5 minutes after the initial attempt
+- **Second retry**: 30 minutes after the first retry
+- **Third retry**: 2 hours after the second retry
+- **Fourth retry**: 5 hours after the third retry
+- **Fifth retry**: 10 hours after the fourth retry
+
+After five failed attempts, the webhook will be marked as failed and will not be retried again.
+
+## Best Practices
+
+### 1. Respond Quickly
+
+Your webhook endpoint should respond with a 2xx status code as quickly as possible. Process the webhook data asynchronously if needed.
+
+```javascript
+app.post('/webhook', async (req, res) => {
+  // Respond immediately
+  res.status(200).send('OK');
+  
+  // Process webhook data asynchronously
+  processWebhookData(req.body).catch(console.error);
+});
+```
+
+### 2. Process Asynchronously
+
+Handle the webhook processing in a background job or queue to avoid timeouts:
+
+```javascript
+async function processWebhookData(webhookData) {
+  try {
+    // Add to queue for background processing
+    await queue.add('process-webhook', webhookData);
+  } catch (error) {
+    console.error('Failed to queue webhook:', error);
+  }
+}
+```
+
+### 3. Verify Signatures
+
+Always verify webhook signatures to ensure security:
+
+```javascript
+function verifyWebhookSignature(payload, signature, secret) {
+  const expectedSignature = crypto
+    .createHmac('sha256', secret)
+    .update(payload)
+    .digest('hex');
+  
+  return crypto.timingSafeEqual(
+    Buffer.from(signature),
+    Buffer.from(expectedSignature)
+  );
+}
+```
+
+### 4. Handle Duplicates
+
+Design your webhook handler to be idempotent to handle potential duplicate deliveries:
+
+```javascript
+async function handleWebhook(webhookData) {
+  const { event, data } = webhookData;
+  
+  // Create a unique identifier based on event type and data
+  let uniqueId;
+  switch (event) {
+    case 'order.shipped':
+      uniqueId = `shipped_${data.order_id}_${data.shipped_at}`;
+      break;
+    case 'order.created':
+      uniqueId = `created_${data.order_id}`;
+      break;
+    case 'invoice.issued':
+      uniqueId = `invoice_${data.invoice_id}`;
+      break;
+    case 'asset.updated':
+      uniqueId = `asset_${data.asset_id}_${data.updated_at}`;
+      break;
+    default:
+      uniqueId = `${event}_${data.id || data.order_id || data.invoice_id || data.asset_id}`;
+  }
+  
+  // Check if we've already processed this webhook
+  const existing = await db.webhook_events.findOne({ unique_id: uniqueId });
+  if (existing && existing.processed) {
+    console.log('Already processed webhook:', uniqueId);
+    return;
+  }
+  
+  // Process the webhook
+  await processWebhookEvent(webhookData);
+  
+  // Mark as processed
+  await db.webhook_events.updateOne(
+    { unique_id: uniqueId },
+    { 
+      $set: { 
+        processed: true, 
+        processed_at: new Date(),
+        event_type: event
+      } 
+    },
+    { upsert: true }
+  );
+}
+```
+
+### 5. Monitor Logs
+
+Regularly check your webhook logs to identify and resolve any delivery issues:
+
+```javascript
+// Log all webhook requests
+app.use('/webhook', (req, res, next) => {
+  const { event, data } = req.body;
+  
+  console.log('Webhook received:', {
+    event: event,
+    order_id: data?.order_id,
+    invoice_id: data?.invoice_id,
+    asset_id: data?.asset_id,
+    customer_id: data?.customer_id,
+    timestamp: new Date().toISOString()
+  });
+  next();
+});
+```
+
+## Error Handling
+
+### Common Issues
+
+1. **Timeout Errors**: Ensure your endpoint responds within 30 seconds
+2. **Signature Mismatch**: Verify your webhook secret is correct
+3. **Duplicate Processing**: Implement idempotency checks
+4. **Network Issues**: Monitor your endpoint's availability
+
+### Debugging
+
+Use the webhook logs in your dashboard to debug delivery issues:
+
+- Check delivery status and response codes
+- Review retry attempts and timing
+- Verify endpoint configuration
+
+## Next Steps
+
+- [API Reference](/api-reference/) - Learn how to retrieve full extraction data
+- [Authentication](/api-reference/getting-started/authentication/) - Set up API authentication
+- [Rate Limits](/api-reference/getting-started/rate-limits/) - Understand API usage limits

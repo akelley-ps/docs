@@ -339,25 +339,1001 @@
           }
         }
       }
-    }
-  },
-  "webhooks": {
-    "/webhook": {
+    },
+"/documents/{documentId}/download": {
+      "get": {
+        "tags": [
+          "Documents"
+        ],
+        "summary": "Get a document",
+        "parameters": [
+          {
+            "name": "documentId",
+            "in": "path",
+            "description": "The document ID to download",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the PDF file"
+          },
+          "400": {
+            "description": "Invalid document ID"
+          },
+          "500": {
+            "description": "Internal server error"
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing customer credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [
+                    "error"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "Specific error code for programmatic handling"
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "Human-readable error message"
+                        },
+                        "details": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "object"
+                          },
+                          "description": "Optional additional context about the error"
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "invalid-customer-id": {
+                    "summary": "Invalid Customer ID",
+                    "description": "Customer ID is invalid or missing",
+                    "value": {
+                      "error": {
+                        "code": "INVALID_CUSTOMER_ID",
+                        "message": "Invalid or missing customer ID. Please ensure your authentication token contains a valid customer ID claim."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/invoices": {
+      "get": {
+        "tags": [
+          "Invoices"
+        ],
+        "summary": "Get invoices",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filter by invoice status (draft, issued, paid, overdue, cancelled)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "issuedSince",
+            "in": "query",
+            "description": "Filter invoices issued after this date (ISO 8601 format)",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "issuedBefore",
+            "in": "query",
+            "description": "Filter invoices issued before this date (ISO 8601 format)",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "dueSince",
+            "in": "query",
+            "description": "Filter invoices due after this date (ISO 8601 format)",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "dueBefore",
+            "in": "query",
+            "description": "Filter invoices due before this date (ISO 8601 format)",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "minAmount",
+            "in": "query",
+            "description": "Filter invoices with amount greater than or equal to this value",
+            "schema": {
+              "type": "number",
+              "format": "double"
+            }
+          },
+          {
+            "name": "maxAmount",
+            "in": "query",
+            "description": "Filter invoices with amount less than or equal to this value",
+            "schema": {
+              "type": "number",
+              "format": "double"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the list of customer invoices",
+            "content": {
+              "text/plain; version=1.0": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CustomerInvoiceSummary"
+                  }
+                }
+              },
+              "application/json; version=1.0": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CustomerInvoiceSummary"
+                  }
+                }
+              },
+              "text/json; version=1.0": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CustomerInvoiceSummary"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid filter parameters"
+          },
+          "401": {
+            "description": "Invalid or missing customer ID"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/invoices/{id}": {
+      "get": {
+        "tags": [
+          "Invoices"
+        ],
+        "summary": "Get an invoice",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The invoice ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the detailed invoice",
+            "content": {
+              "text/plain; version=1.0": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerInvoiceDetail"
+                }
+              },
+              "application/json; version=1.0": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerInvoiceDetail"
+                }
+              },
+              "text/json; version=1.0": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerInvoiceDetail"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Invoice not found"
+          },
+          "401": {
+            "description": "Invalid or missing customer ID"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/invoices/{id}/download": {
+      "get": {
+        "tags": [
+          "Invoices"
+        ],
+        "summary": "Download an invoice",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The invoice ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the PDF file"
+          },
+          "404": {
+            "description": "Invoice not found"
+          },
+          "401": {
+            "description": "Invalid or missing customer ID"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/orders": {
       "post": {
-        "description": "Information about a new plant added to the store",
+        "tags": [
+          "Orders"
+        ],
+        "summary": "Create an order",
         "requestBody": {
-          "description": "Plant added to the store",
+          "description": "The order creation request",
           "content": {
-            "application/json": {
+            "application/json; version=1.0": {
               "schema": {
-                "$ref": "#/components/schemas/NewPlant"
+                "$ref": "#/components/schemas/CreateOrderRequest"
+              }
+            },
+            "text/json; version=1.0": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateOrderRequest"
+              }
+            },
+            "application/*+json; version=1.0": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateOrderRequest"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Return a 200 status to indicate that the data was received successfully"
+            "description": "OK",
+            "content": {
+              "text/plain; version=1.0": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderResponse"
+                }
+              },
+              "application/json; version=1.0": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderResponse"
+                }
+              },
+              "text/json; version=1.0": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderResponse"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Order created successfully"
+          },
+          "400": {
+            "description": "Invalid order data"
+          },
+          "401": {
+            "description": "Invalid or missing customer ID"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Orders"
+        ],
+        "summary": "Get orders",
+        "parameters": [
+          {
+            "name": "orderType",
+            "in": "query",
+            "description": "Filter by order type (part, depot, service, training)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filter by order status (pending, approved, shipped, delivered, cancelled)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "createdSince",
+            "in": "query",
+            "description": "Filter orders created after this date (ISO 8601 format)",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "createdBefore",
+            "in": "query",
+            "description": "Filter orders created before this date (ISO 8601 format)",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the list of orders",
+            "content": {
+              "text/plain; version=1.0": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OrderSummary"
+                  }
+                }
+              },
+              "application/json; version=1.0": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OrderSummary"
+                  }
+                }
+              },
+              "text/json; version=1.0": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OrderSummary"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid filter parameters"
+          },
+          "401": {
+            "description": "Invalid or missing customer ID"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/orders/{id}": {
+      "get": {
+        "tags": [
+          "Orders"
+        ],
+        "summary": "Get an order",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The order ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the detailed order",
+            "content": {
+              "text/plain; version=1.0": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderDetail"
+                }
+              },
+              "application/json; version=1.0": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderDetail"
+                }
+              },
+              "text/json; version=1.0": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderDetail"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Order not found"
+          },
+          "401": {
+            "description": "Invalid or missing customer ID"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/orders/{id}/shipments": {
+      "get": {
+        "tags": [
+          "Orders"
+        ],
+        "summary": "Get order shipments",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The order ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns shipment tracking information",
+            "content": {
+              "text/plain; version=1.0": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ShipmentTracking"
+                  }
+                }
+              },
+              "application/json; version=1.0": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ShipmentTracking"
+                  }
+                }
+              },
+              "text/json; version=1.0": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ShipmentTracking"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Order not found or no shipments available"
+          },
+          "401": {
+            "description": "Invalid or missing customer ID"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/purchase-orders": {
+      "post": {
+        "tags": [
+          "PurchaseOrders"
+        ],
+        "summary": "Create a purchase order",
+        "requestBody": {
+          "description": "The purchase order creation request",
+          "content": {
+            "application/json; version=1.0": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePurchaseOrderRequest"
+              }
+            },
+            "text/json; version=1.0": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePurchaseOrderRequest"
+              }
+            },
+            "application/*+json; version=1.0": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePurchaseOrderRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain; version=1.0": {
+                "schema": {
+                  "$ref": "#/components/schemas/PurchaseOrderResponse"
+                }
+              },
+              "application/json; version=1.0": {
+                "schema": {
+                  "$ref": "#/components/schemas/PurchaseOrderResponse"
+                }
+              },
+              "text/json; version=1.0": {
+                "schema": {
+                  "$ref": "#/components/schemas/PurchaseOrderResponse"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Purchase order created successfully"
+          },
+          "400": {
+            "description": "Invalid purchase order data"
+          },
+          "401": {
+            "description": "Invalid or missing customer ID"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "PurchaseOrders"
+        ],
+        "summary": "Get purchase orders",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filter by purchase order status (draft, submitted, approved, rejected, completed)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "createdSince",
+            "in": "query",
+            "description": "Filter purchase orders created after this date (ISO 8601 format)",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "createdBefore",
+            "in": "query",
+            "description": "Filter purchase orders created before this date (ISO 8601 format)",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the list of purchase orders",
+            "content": {
+              "text/plain; version=1.0": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PurchaseOrderSummary"
+                  }
+                }
+              },
+              "application/json; version=1.0": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PurchaseOrderSummary"
+                  }
+                }
+              },
+              "text/json; version=1.0": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PurchaseOrderSummary"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid filter parameters"
+          },
+          "401": {
+            "description": "Invalid or missing customer ID"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/purchase-orders/{id}": {
+      "get": {
+        "tags": [
+          "PurchaseOrders"
+        ],
+        "summary": "Get a purchase order",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The purchase order ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the detailed purchase order",
+            "content": {
+              "text/plain; version=1.0": {
+                "schema": {
+                  "$ref": "#/components/schemas/PurchaseOrderDetail"
+                }
+              },
+              "application/json; version=1.0": {
+                "schema": {
+                  "$ref": "#/components/schemas/PurchaseOrderDetail"
+                }
+              },
+              "text/json; version=1.0": {
+                "schema": {
+                  "$ref": "#/components/schemas/PurchaseOrderDetail"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Purchase order not found"
+          },
+          "401": {
+            "description": "Invalid or missing customer ID"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/schemas/custom-fields/{entityType}": {
+      "get": {
+        "tags": [
+          "Schemas"
+        ],
+        "summary": "Get custom field schemas",
+        "parameters": [
+          {
+            "name": "entityType",
+            "in": "path",
+            "description": "The entity type (e.g., \"asset\")",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain; version=1.0": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityCustomFieldSchemaResponse"
+                }
+              },
+              "application/json; version=1.0": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityCustomFieldSchemaResponse"
+                }
+              },
+              "text/json; version=1.0": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityCustomFieldSchemaResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing customer credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [
+                    "error"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "Specific error code for programmatic handling"
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "Human-readable error message"
+                        },
+                        "details": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "object"
+                          },
+                          "description": "Optional additional context about the error"
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "invalid-customer-id": {
+                    "summary": "Invalid Customer ID",
+                    "description": "Customer ID is invalid or missing",
+                    "value": {
+                      "error": {
+                        "code": "INVALID_CUSTOMER_ID",
+                        "message": "Invalid or missing customer ID. Please ensure your authentication token contains a valid customer ID claim."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error - Unexpected error occurred",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [
+                    "error"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "Specific error code for programmatic handling"
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "Human-readable error message"
+                        },
+                        "details": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "object"
+                          },
+                          "description": "Optional additional context about the error"
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "internal-error": {
+                    "summary": "Internal Server Error",
+                    "description": "Unexpected server error",
+                    "value": {
+                      "error": {
+                        "code": "INTERNAL_ERROR",
+                        "message": "An unexpected error occurred while retrieving the asset.",
+                        "details": {
+                          "assetId": 123,
+                          "exception": "Database connection timeout"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/schemas/entity-types": {
+      "get": {
+        "tags": [
+          "Schemas"
+        ],
+        "summary": "Get entity types",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain; version=1.0": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityTypesResponse"
+                }
+              },
+              "application/json; version=1.0": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityTypesResponse"
+                }
+              },
+              "text/json; version=1.0": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityTypesResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing customer credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [
+                    "error"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "Specific error code for programmatic handling"
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "Human-readable error message"
+                        },
+                        "details": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "object"
+                          },
+                          "description": "Optional additional context about the error"
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "invalid-customer-id": {
+                    "summary": "Invalid Customer ID",
+                    "description": "Customer ID is invalid or missing",
+                    "value": {
+                      "error": {
+                        "code": "INVALID_CUSTOMER_ID",
+                        "message": "Invalid or missing customer ID. Please ensure your authentication token contains a valid customer ID claim."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error - Unexpected error occurred",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [
+                    "error"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "Specific error code for programmatic handling"
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "Human-readable error message"
+                        },
+                        "details": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "object"
+                          },
+                          "description": "Optional additional context about the error"
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "internal-error": {
+                    "summary": "Internal Server Error",
+                    "description": "Unexpected server error",
+                    "value": {
+                      "error": {
+                        "code": "INTERNAL_ERROR",
+                        "message": "An unexpected error occurred while retrieving the asset.",
+                        "details": {
+                          "assetId": 123,
+                          "exception": "Database connection timeout"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -365,6 +1341,34 @@
   },
   "components": {
     "schemas": {
+      "ApprovalInfo": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "Approval status",
+            "nullable": true
+          },
+          "approverName": {
+            "type": "string",
+            "description": "Approver name",
+            "nullable": true
+          },
+          "approvalDate": {
+            "type": "string",
+            "description": "Approval date",
+            "format": "date-time",
+            "nullable": true
+          },
+          "comments": {
+            "type": "string",
+            "description": "Approval comments",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Approval information"
+      },
       "Asset": {
         "type": "object",
         "properties": {
@@ -476,12 +1480,1971 @@
             }
           ]
         }
+      },
+      "AssetChange": {
+        "type": "object",
+        "properties": {
+          "assetId": {
+            "type": "integer",
+            "description": "Asset ID",
+            "format": "int32"
+          },
+          "changeType": {
+            "type": "string",
+            "description": "Type of change (created, modified, deleted)",
+            "nullable": true
+          },
+          "lastChangedDate": {
+            "type": "string",
+            "description": "Last changed date",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Asset change information for delta queries"
+      },
+      "AssetReference": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Asset ID",
+            "nullable": true
+          },
+          "serialNumber": {
+            "type": "string",
+            "description": "Asset serial number",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "description": "Asset description",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Asset reference in orders"
+      },
+      "BillingAddress": {
+        "type": "object",
+        "properties": {
+          "contactName": {
+            "type": "string",
+            "description": "Contact name",
+            "nullable": true
+          },
+          "companyName": {
+            "type": "string",
+            "description": "Company name",
+            "nullable": true
+          },
+          "streetAddress": {
+            "type": "string",
+            "description": "Street address",
+            "nullable": true
+          },
+          "city": {
+            "type": "string",
+            "description": "City",
+            "nullable": true
+          },
+          "state": {
+            "type": "string",
+            "description": "State or province",
+            "nullable": true
+          },
+          "postalCode": {
+            "type": "string",
+            "description": "Postal code",
+            "nullable": true
+          },
+          "country": {
+            "type": "string",
+            "description": "Country",
+            "nullable": true
+          },
+          "phoneNumber": {
+            "type": "string",
+            "description": "Phone number",
+            "nullable": true
+          },
+          "emailAddress": {
+            "type": "string",
+            "description": "Email address",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Billing address information"
+      },
+      "CreateAssetRequest": {
+        "type": "object",
+        "properties": {
+          "contractNumber": {
+            "type": "string",
+            "description": "Contract number",
+            "nullable": true
+          },
+          "psAssetId": {
+            "type": "string",
+            "description": "PS Asset ID",
+            "nullable": true
+          },
+          "serialNumber": {
+            "type": "string",
+            "description": "Serial number",
+            "nullable": true
+          },
+          "pmsPerYear": {
+            "type": "integer",
+            "description": "PMs per year",
+            "format": "int32"
+          },
+          "coverageStartDate": {
+            "type": "string",
+            "description": "Coverage start date",
+            "format": "date-time"
+          },
+          "coverageEndDate": {
+            "type": "string",
+            "description": "Coverage end date",
+            "format": "date-time"
+          },
+          "annualCost": {
+            "type": "number",
+            "description": "Annual cost",
+            "format": "double"
+          },
+          "customFields": {
+            "type": "object",
+            "additionalProperties": {
+
+            },
+            "description": "Custom fields",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Request model for creating a new asset"
+      },
+      "CreateOrderRequest": {
+        "type": "object",
+        "properties": {
+          "orderType": {
+            "type": "string",
+            "description": "The type of order (part, depot, service, training)",
+            "nullable": true
+          },
+          "priority": {
+            "type": "string",
+            "description": "Priority level of the order (low, medium, high, critical)",
+            "nullable": true
+          },
+          "lineItems": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrderLineItem"
+            },
+            "description": "List of line items in the order",
+            "nullable": true
+          },
+          "assetIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Associated asset IDs (optional)",
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "description": "Special instructions or notes",
+            "nullable": true
+          },
+          "requestedDeliveryDate": {
+            "type": "string",
+            "description": "Requested delivery date (optional)",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Request model for creating a new order"
+      },
+      "CreatePurchaseOrderRequest": {
+        "type": "object",
+        "properties": {
+          "purchaseOrderType": {
+            "type": "string",
+            "description": "Type of purchase order (activate-pending, blind-order)",
+            "nullable": true
+          },
+          "orderId": {
+            "type": "string",
+            "description": "Order ID to activate (required for activate-pending type)",
+            "nullable": true
+          },
+          "purchaseOrderNumber": {
+            "type": "string",
+            "description": "Purchase order number (optional, will be generated if not provided)",
+            "nullable": true
+          },
+          "lineItems": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PurchaseOrderLineItem"
+            },
+            "description": "List of line items for blind orders",
+            "nullable": true
+          },
+          "budgetAmount": {
+            "type": "number",
+            "description": "Total budget amount",
+            "format": "double",
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "description": "Special instructions or notes",
+            "nullable": true
+          },
+          "requestedDeliveryDate": {
+            "type": "string",
+            "description": "Requested delivery date",
+            "format": "date-time",
+            "nullable": true
+          },
+          "billingAddress": {
+            "$ref": "#/components/schemas/BillingAddress"
+          },
+          "shippingAddress": {
+            "$ref": "#/components/schemas/ShippingAddress"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Request model for creating a new purchase order"
+      },
+      "CustomFieldSchema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Unique identifier for the custom field (used as key in customFields object)",
+            "example": "center"
+          },
+          "displayName": {
+            "type": "string",
+            "description": "Human-readable display name for the field",
+            "example": "Medical Center"
+          },
+          "type": {
+            "type": "string",
+            "description": "Data type of the field: string, number, date, boolean, enum",
+            "example": "string"
+          },
+          "description": {
+            "type": "string",
+            "description": "Description of the field's purpose and usage",
+            "example": "The medical center or facility name"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Schema definition for a custom field that can be applied to any entity type. Custom fields are customer-specific and vary by organization."
+      },
+      "CustomerInvoiceDetail": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique invoice identifier",
+            "nullable": true
+          },
+          "invoiceNumber": {
+            "type": "string",
+            "description": "Invoice number",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "description": "Invoice status",
+            "nullable": true
+          },
+          "issueDate": {
+            "type": "string",
+            "description": "Issue date",
+            "format": "date-time"
+          },
+          "dueDate": {
+            "type": "string",
+            "description": "Due date",
+            "format": "date-time"
+          },
+          "totalAmount": {
+            "type": "number",
+            "description": "Total amount",
+            "format": "double"
+          },
+          "amountPaid": {
+            "type": "number",
+            "description": "Amount paid",
+            "format": "double"
+          },
+          "balanceDue": {
+            "type": "number",
+            "description": "Balance due",
+            "format": "double"
+          },
+          "currency": {
+            "type": "string",
+            "description": "Currency code",
+            "nullable": true
+          },
+          "lineItemCount": {
+            "type": "integer",
+            "description": "Number of line items",
+            "format": "int32"
+          },
+          "orderIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Associated order IDs",
+            "nullable": true
+          },
+          "billingAddress": {
+            "$ref": "#/components/schemas/BillingAddress"
+          },
+          "shippingAddress": {
+            "$ref": "#/components/schemas/ShippingAddress"
+          },
+          "lineItems": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InvoiceLineItem"
+            },
+            "description": "Line items",
+            "nullable": true
+          },
+          "subtotal": {
+            "type": "number",
+            "description": "Subtotal before taxes and fees",
+            "format": "double"
+          },
+          "taxAmount": {
+            "type": "number",
+            "description": "Tax amount",
+            "format": "double"
+          },
+          "shippingAmount": {
+            "type": "number",
+            "description": "Shipping and handling charges",
+            "format": "double"
+          },
+          "otherFees": {
+            "type": "number",
+            "description": "Other fees and charges",
+            "format": "double"
+          },
+          "discountAmount": {
+            "type": "number",
+            "description": "Discount amount",
+            "format": "double"
+          },
+          "paymentTerms": {
+            "type": "string",
+            "description": "Payment terms",
+            "nullable": true
+          },
+          "paymentHistory": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PaymentRecord"
+            },
+            "description": "Payment history",
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "description": "Notes and special instructions",
+            "nullable": true
+          },
+          "termsAndConditions": {
+            "type": "string",
+            "description": "Terms and conditions",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Detailed customer invoice information"
+      },
+      "CustomerInvoiceSummary": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique invoice identifier",
+            "nullable": true
+          },
+          "invoiceNumber": {
+            "type": "string",
+            "description": "Invoice number",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "description": "Invoice status",
+            "nullable": true
+          },
+          "issueDate": {
+            "type": "string",
+            "description": "Issue date",
+            "format": "date-time"
+          },
+          "dueDate": {
+            "type": "string",
+            "description": "Due date",
+            "format": "date-time"
+          },
+          "totalAmount": {
+            "type": "number",
+            "description": "Total amount",
+            "format": "double"
+          },
+          "amountPaid": {
+            "type": "number",
+            "description": "Amount paid",
+            "format": "double"
+          },
+          "balanceDue": {
+            "type": "number",
+            "description": "Balance due",
+            "format": "double"
+          },
+          "currency": {
+            "type": "string",
+            "description": "Currency code",
+            "nullable": true
+          },
+          "lineItemCount": {
+            "type": "integer",
+            "description": "Number of line items",
+            "format": "int32"
+          },
+          "orderIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Associated order IDs",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Customer invoice summary for list views"
+      },
+      "Document": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true
+          },
+          "documentType": {
+            "type": "string",
+            "nullable": true
+          },
+          "fileName": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdDate": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
+      "EntityCustomFieldSchemaResponse": {
+        "type": "object",
+        "properties": {
+          "customerId": {
+            "type": "string",
+            "description": "The customer ID",
+            "nullable": true
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CustomFieldSchema"
+            },
+            "description": "List of custom field schemas",
+            "nullable": true
+          },
+          "entityType": {
+            "type": "string",
+            "description": "The entity type (e.g., \"asset\", \"customer\", \"contract\")",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Response model for entity-specific custom field schema endpoints"
+      },
+      "EntityTypesResponse": {
+        "type": "object",
+        "properties": {
+          "customerId": {
+            "type": "string",
+            "description": "The customer ID",
+            "nullable": true
+          },
+          "entityTypes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of available entity types",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Response model for entity types endpoint"
+      },
+      "ExceptionImpact": {
+        "type": "object",
+        "properties": {
+          "costImpact": {
+            "type": "number",
+            "description": "Cost impact",
+            "format": "double",
+            "nullable": true
+          },
+          "scheduleImpact": {
+            "type": "string",
+            "description": "Schedule impact",
+            "nullable": true
+          },
+          "qualityImpact": {
+            "type": "string",
+            "description": "Quality impact",
+            "nullable": true
+          },
+          "riskLevel": {
+            "type": "string",
+            "description": "Risk level",
+            "nullable": true
+          },
+          "mitigationRecommendations": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Mitigation recommendations",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Impact assessment for an exception"
+      },
+      "ExceptionLineItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Line item ID",
+            "nullable": true
+          },
+          "itemCode": {
+            "type": "string",
+            "description": "Part number or service code",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "description": "Item description",
+            "nullable": true
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "Quantity affected",
+            "format": "int32"
+          },
+          "originalUnitPrice": {
+            "type": "number",
+            "description": "Original unit price",
+            "format": "double"
+          },
+          "currentUnitPrice": {
+            "type": "number",
+            "description": "Current unit price (may be different due to exception)",
+            "format": "double",
+            "nullable": true
+          },
+          "issue": {
+            "type": "string",
+            "description": "Specific issue with this line item",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Line item affected by an exception"
+      },
+      "ExceptionResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Response ID",
+            "nullable": true
+          },
+          "responseType": {
+            "type": "string",
+            "description": "Response type",
+            "nullable": true
+          },
+          "responseDate": {
+            "type": "string",
+            "description": "Response timestamp",
+            "format": "date-time"
+          },
+          "comments": {
+            "type": "string",
+            "description": "Customer comments",
+            "nullable": true
+          },
+          "responseData": {
+            "type": "object",
+            "additionalProperties": {
+
+            },
+            "description": "Response data",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Customer response to an exception"
+      },
+      "ExceptionResponseRequest": {
+        "type": "object",
+        "properties": {
+          "responseType": {
+            "type": "string",
+            "description": "The type of response (approve, reject, select-variant, provide-alternative, etc.)",
+            "nullable": true
+          },
+          "selectedVariantId": {
+            "type": "string",
+            "description": "Selected variant ID (for variant selection responses)",
+            "nullable": true
+          },
+          "alternativePartNumber": {
+            "type": "string",
+            "description": "Alternative part number (for alternative part responses)",
+            "nullable": true
+          },
+          "comments": {
+            "type": "string",
+            "description": "Customer comments or justification",
+            "nullable": true
+          },
+          "additionalData": {
+            "type": "object",
+            "additionalProperties": {
+
+            },
+            "description": "Additional response data (varies by exception type)",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Request model for submitting an exception response"
+      },
+      "InvoiceLineItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Line item ID",
+            "nullable": true
+          },
+          "itemCode": {
+            "type": "string",
+            "description": "Item code or part number",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "description": "Item description",
+            "nullable": true
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "Quantity",
+            "format": "int32"
+          },
+          "unitPrice": {
+            "type": "number",
+            "description": "Unit price",
+            "format": "double"
+          },
+          "lineTotal": {
+            "type": "number",
+            "description": "Line total",
+            "format": "double"
+          },
+          "taxRate": {
+            "type": "number",
+            "description": "Tax rate",
+            "format": "double"
+          },
+          "taxAmount": {
+            "type": "number",
+            "description": "Tax amount for this line",
+            "format": "double"
+          },
+          "orderId": {
+            "type": "string",
+            "description": "Associated order ID",
+            "nullable": true
+          },
+          "assetId": {
+            "type": "string",
+            "description": "Associated asset ID",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Invoice line item"
+      },
+      "OrderDetail": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique order identifier",
+            "nullable": true
+          },
+          "orderType": {
+            "type": "string",
+            "description": "Order type",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "description": "Order status",
+            "nullable": true
+          },
+          "createdDate": {
+            "type": "string",
+            "description": "Order creation date",
+            "format": "date-time"
+          },
+          "lineItemCount": {
+            "type": "integer",
+            "description": "Total line items",
+            "format": "int32"
+          },
+          "totalValue": {
+            "type": "number",
+            "description": "Total order value",
+            "format": "double"
+          },
+          "priority": {
+            "type": "string",
+            "description": "Order priority",
+            "nullable": true
+          },
+          "lineItems": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrderLineItemDetail"
+            },
+            "description": "Line items in the order",
+            "nullable": true
+          },
+          "assets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AssetReference"
+            },
+            "description": "Associated assets",
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "description": "Special notes",
+            "nullable": true
+          },
+          "requestedDeliveryDate": {
+            "type": "string",
+            "description": "Requested delivery date",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Detailed order information"
+      },
+      "OrderExceptionDetail": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique exception identifier",
+            "nullable": true
+          },
+          "orderId": {
+            "type": "string",
+            "description": "Associated order ID",
+            "nullable": true
+          },
+          "exceptionType": {
+            "type": "string",
+            "description": "Exception type",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "description": "Exception status",
+            "nullable": true
+          },
+          "severity": {
+            "type": "string",
+            "description": "Exception severity (low, medium, high, critical)",
+            "nullable": true
+          },
+          "createdDate": {
+            "type": "string",
+            "description": "Exception creation date",
+            "format": "date-time"
+          },
+          "dueDate": {
+            "type": "string",
+            "description": "Due date for resolution",
+            "format": "date-time",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "description": "Brief description of the exception",
+            "nullable": true
+          },
+          "affectedLineItemCount": {
+            "type": "integer",
+            "description": "Number of affected line items",
+            "format": "int32"
+          },
+          "detailedDescription": {
+            "type": "string",
+            "description": "Detailed description of the exception",
+            "nullable": true
+          },
+          "affectedLineItems": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ExceptionLineItem"
+            },
+            "description": "Affected line items",
+            "nullable": true
+          },
+          "resolutionOptions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ResolutionOption"
+            },
+            "description": "Available resolution options",
+            "nullable": true
+          },
+          "responseHistory": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ExceptionResponse"
+            },
+            "description": "Customer response history",
+            "nullable": true
+          },
+          "recommendations": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "System recommendations",
+            "nullable": true
+          },
+          "impact": {
+            "$ref": "#/components/schemas/ExceptionImpact"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Detailed order exception information"
+      },
+      "OrderExceptionSummary": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique exception identifier",
+            "nullable": true
+          },
+          "orderId": {
+            "type": "string",
+            "description": "Associated order ID",
+            "nullable": true
+          },
+          "exceptionType": {
+            "type": "string",
+            "description": "Exception type",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "description": "Exception status",
+            "nullable": true
+          },
+          "severity": {
+            "type": "string",
+            "description": "Exception severity (low, medium, high, critical)",
+            "nullable": true
+          },
+          "createdDate": {
+            "type": "string",
+            "description": "Exception creation date",
+            "format": "date-time"
+          },
+          "dueDate": {
+            "type": "string",
+            "description": "Due date for resolution",
+            "format": "date-time",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "description": "Brief description of the exception",
+            "nullable": true
+          },
+          "affectedLineItemCount": {
+            "type": "integer",
+            "description": "Number of affected line items",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Order exception summary for list views"
+      },
+      "OrderLineItem": {
+        "type": "object",
+        "properties": {
+          "itemCode": {
+            "type": "string",
+            "description": "Part number or service code",
+            "nullable": true
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "Quantity requested",
+            "format": "int32"
+          },
+          "unitPrice": {
+            "type": "number",
+            "description": "Unit price (optional, may be determined by system)",
+            "format": "double",
+            "nullable": true
+          },
+          "specifications": {
+            "type": "string",
+            "description": "Special requirements or specifications",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Order line item"
+      },
+      "OrderLineItemDetail": {
+        "type": "object",
+        "properties": {
+          "itemCode": {
+            "type": "string",
+            "description": "Part number or service code",
+            "nullable": true
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "Quantity requested",
+            "format": "int32"
+          },
+          "unitPrice": {
+            "type": "number",
+            "description": "Unit price",
+            "format": "double"
+          },
+          "specifications": {
+            "type": "string",
+            "description": "Special requirements or specifications",
+            "nullable": true
+          },
+          "id": {
+            "type": "string",
+            "description": "Line item ID",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "description": "Item description",
+            "nullable": true
+          },
+          "lineTotal": {
+            "type": "number",
+            "description": "Line total",
+            "format": "double"
+          },
+          "status": {
+            "type": "string",
+            "description": "Item status",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Detailed order line item"
+      },
+      "OrderResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique order identifier",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "description": "Order status",
+            "nullable": true
+          },
+          "createdDate": {
+            "type": "string",
+            "description": "Order creation timestamp",
+            "format": "date-time"
+          },
+          "estimatedTotal": {
+            "type": "number",
+            "description": "Estimated total cost",
+            "format": "double"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Order response model"
+      },
+      "OrderSummary": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique order identifier",
+            "nullable": true
+          },
+          "orderType": {
+            "type": "string",
+            "description": "Order type",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "description": "Order status",
+            "nullable": true
+          },
+          "createdDate": {
+            "type": "string",
+            "description": "Order creation date",
+            "format": "date-time"
+          },
+          "lineItemCount": {
+            "type": "integer",
+            "description": "Total line items",
+            "format": "int32"
+          },
+          "totalValue": {
+            "type": "number",
+            "description": "Total order value",
+            "format": "double"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Order summary for list views"
+      },
+      "PartVariant": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Variant ID",
+            "nullable": true
+          },
+          "partNumber": {
+            "type": "string",
+            "description": "Part number",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "description": "Variant description",
+            "nullable": true
+          },
+          "unitPrice": {
+            "type": "number",
+            "description": "Unit price",
+            "format": "double"
+          },
+          "availability": {
+            "type": "string",
+            "description": "Availability status",
+            "nullable": true
+          },
+          "deliveryTimeframe": {
+            "type": "string",
+            "description": "Delivery timeframe",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Part variant option"
+      },
+      "PaymentRecord": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Payment ID",
+            "nullable": true
+          },
+          "paymentDate": {
+            "type": "string",
+            "description": "Payment date",
+            "format": "date-time"
+          },
+          "amount": {
+            "type": "number",
+            "description": "Payment amount",
+            "format": "double"
+          },
+          "paymentMethod": {
+            "type": "string",
+            "description": "Payment method",
+            "nullable": true
+          },
+          "transactionReference": {
+            "type": "string",
+            "description": "Transaction reference",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "description": "Payment status",
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "description": "Payment notes",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Payment record"
+      },
+      "PurchaseOrderDetail": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique purchase order identifier",
+            "nullable": true
+          },
+          "purchaseOrderNumber": {
+            "type": "string",
+            "description": "Purchase order number",
+            "nullable": true
+          },
+          "purchaseOrderType": {
+            "type": "string",
+            "description": "Purchase order type",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "description": "Purchase order status",
+            "nullable": true
+          },
+          "createdDate": {
+            "type": "string",
+            "description": "Purchase order creation date",
+            "format": "date-time"
+          },
+          "lineItemCount": {
+            "type": "integer",
+            "description": "Total line items",
+            "format": "int32"
+          },
+          "totalAmount": {
+            "type": "number",
+            "description": "Total amount",
+            "format": "double"
+          },
+          "orderId": {
+            "type": "string",
+            "description": "Associated order ID (if activating a pending order)",
+            "nullable": true
+          },
+          "lineItems": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PurchaseOrderLineItemDetail"
+            },
+            "description": "Line items in the purchase order",
+            "nullable": true
+          },
+          "billingAddress": {
+            "$ref": "#/components/schemas/BillingAddress"
+          },
+          "shippingAddress": {
+            "$ref": "#/components/schemas/ShippingAddress"
+          },
+          "notes": {
+            "type": "string",
+            "description": "Special notes",
+            "nullable": true
+          },
+          "requestedDeliveryDate": {
+            "type": "string",
+            "description": "Requested delivery date",
+            "format": "date-time",
+            "nullable": true
+          },
+          "budgetAmount": {
+            "type": "number",
+            "description": "Budget amount",
+            "format": "double",
+            "nullable": true
+          },
+          "approvalInfo": {
+            "$ref": "#/components/schemas/ApprovalInfo"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Detailed purchase order information"
+      },
+      "PurchaseOrderLineItem": {
+        "type": "object",
+        "properties": {
+          "itemCode": {
+            "type": "string",
+            "description": "Part number or service code",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "description": "Item description",
+            "nullable": true
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "Quantity requested",
+            "format": "int32"
+          },
+          "unitPrice": {
+            "type": "number",
+            "description": "Unit price",
+            "format": "double"
+          },
+          "specifications": {
+            "type": "string",
+            "description": "Special requirements or specifications",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Purchase order line item"
+      },
+      "PurchaseOrderLineItemDetail": {
+        "type": "object",
+        "properties": {
+          "itemCode": {
+            "type": "string",
+            "description": "Part number or service code",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "description": "Item description",
+            "nullable": true
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "Quantity requested",
+            "format": "int32"
+          },
+          "unitPrice": {
+            "type": "number",
+            "description": "Unit price",
+            "format": "double"
+          },
+          "specifications": {
+            "type": "string",
+            "description": "Special requirements or specifications",
+            "nullable": true
+          },
+          "id": {
+            "type": "string",
+            "description": "Line item ID",
+            "nullable": true
+          },
+          "lineTotal": {
+            "type": "number",
+            "description": "Line total",
+            "format": "double"
+          },
+          "status": {
+            "type": "string",
+            "description": "Item status",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Detailed purchase order line item"
+      },
+      "PurchaseOrderResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique purchase order identifier",
+            "nullable": true
+          },
+          "purchaseOrderNumber": {
+            "type": "string",
+            "description": "Purchase order number",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "description": "Purchase order status",
+            "nullable": true
+          },
+          "createdDate": {
+            "type": "string",
+            "description": "Purchase order creation timestamp",
+            "format": "date-time"
+          },
+          "totalAmount": {
+            "type": "number",
+            "description": "Total amount",
+            "format": "double"
+          },
+          "orderId": {
+            "type": "string",
+            "description": "Associated order ID (if activating a pending order)",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Purchase order response model"
+      },
+      "PurchaseOrderSummary": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique purchase order identifier",
+            "nullable": true
+          },
+          "purchaseOrderNumber": {
+            "type": "string",
+            "description": "Purchase order number",
+            "nullable": true
+          },
+          "purchaseOrderType": {
+            "type": "string",
+            "description": "Purchase order type",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "description": "Purchase order status",
+            "nullable": true
+          },
+          "createdDate": {
+            "type": "string",
+            "description": "Purchase order creation date",
+            "format": "date-time"
+          },
+          "lineItemCount": {
+            "type": "integer",
+            "description": "Total line items",
+            "format": "int32"
+          },
+          "totalAmount": {
+            "type": "number",
+            "description": "Total amount",
+            "format": "double"
+          },
+          "orderId": {
+            "type": "string",
+            "description": "Associated order ID (if activating a pending order)",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Purchase order summary for list views"
+      },
+      "RegisterWebhookRequest": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "Webhook endpoint URL",
+            "nullable": true
+          },
+          "eventTypes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Event types to subscribe to",
+            "nullable": true
+          },
+          "secret": {
+            "type": "string",
+            "description": "Secret key for webhook signature verification (optional)",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "description": "Description of the webhook",
+            "nullable": true
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "Whether the webhook is active"
+          },
+          "retryConfig": {
+            "$ref": "#/components/schemas/WebhookRetryConfig"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Request model for registering a new webhook"
+      },
+      "ResolutionOption": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Option ID",
+            "nullable": true
+          },
+          "type": {
+            "type": "string",
+            "description": "Option type (approve, reject, select-variant, provide-alternative, etc.)",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "description": "Option description",
+            "nullable": true
+          },
+          "variants": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PartVariant"
+            },
+            "description": "Available variants (for variant selection)",
+            "nullable": true
+          },
+          "impact": {
+            "type": "string",
+            "description": "Impact of selecting this option",
+            "nullable": true
+          },
+          "isRecommended": {
+            "type": "boolean",
+            "description": "Whether this option is recommended"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Resolution option for an exception"
+      },
+      "ShipmentTracking": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Shipment ID",
+            "nullable": true
+          },
+          "trackingNumber": {
+            "type": "string",
+            "description": "Tracking number",
+            "nullable": true
+          },
+          "carrier": {
+            "type": "string",
+            "description": "Carrier name",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "description": "Shipment status",
+            "nullable": true
+          },
+          "shipmentDate": {
+            "type": "string",
+            "description": "Shipment date",
+            "format": "date-time"
+          },
+          "estimatedDeliveryDate": {
+            "type": "string",
+            "description": "Estimated delivery date",
+            "format": "date-time",
+            "nullable": true
+          },
+          "actualDeliveryDate": {
+            "type": "string",
+            "description": "Actual delivery date",
+            "format": "date-time",
+            "nullable": true
+          },
+          "lineItemIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Line items in this shipment",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Shipment tracking information"
+      },
+      "ShippingAddress": {
+        "type": "object",
+        "properties": {
+          "contactName": {
+            "type": "string",
+            "description": "Contact name",
+            "nullable": true
+          },
+          "companyName": {
+            "type": "string",
+            "description": "Company name",
+            "nullable": true
+          },
+          "streetAddress": {
+            "type": "string",
+            "description": "Street address",
+            "nullable": true
+          },
+          "city": {
+            "type": "string",
+            "description": "City",
+            "nullable": true
+          },
+          "state": {
+            "type": "string",
+            "description": "State or province",
+            "nullable": true
+          },
+          "postalCode": {
+            "type": "string",
+            "description": "Postal code",
+            "nullable": true
+          },
+          "country": {
+            "type": "string",
+            "description": "Country",
+            "nullable": true
+          },
+          "phoneNumber": {
+            "type": "string",
+            "description": "Phone number",
+            "nullable": true
+          },
+          "specialInstructions": {
+            "type": "string",
+            "description": "Special shipping instructions",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Shipping address information"
+      },
+      "UpdateAssetRequest": {
+        "type": "object",
+        "properties": {
+          "contractNumber": {
+            "type": "string",
+            "description": "Contract number",
+            "nullable": true
+          },
+          "psAssetId": {
+            "type": "string",
+            "description": "PS Asset ID",
+            "nullable": true
+          },
+          "serialNumber": {
+            "type": "string",
+            "description": "Serial number",
+            "nullable": true
+          },
+          "pmsPerYear": {
+            "type": "integer",
+            "description": "PMs per year",
+            "format": "int32",
+            "nullable": true
+          },
+          "coverageStartDate": {
+            "type": "string",
+            "description": "Coverage start date",
+            "format": "date-time",
+            "nullable": true
+          },
+          "coverageEndDate": {
+            "type": "string",
+            "description": "Coverage end date",
+            "format": "date-time",
+            "nullable": true
+          },
+          "annualCost": {
+            "type": "number",
+            "description": "Annual cost",
+            "format": "double",
+            "nullable": true
+          },
+          "customFields": {
+            "type": "object",
+            "additionalProperties": {
+
+            },
+            "description": "Custom fields",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Request model for updating an asset"
+      },
+      "UpdateWebhookRequest": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "Webhook endpoint URL",
+            "nullable": true
+          },
+          "eventTypes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Event types to subscribe to",
+            "nullable": true
+          },
+          "secret": {
+            "type": "string",
+            "description": "Secret key for webhook signature verification",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "description": "Description of the webhook",
+            "nullable": true
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "Whether the webhook is active",
+            "nullable": true
+          },
+          "retryConfig": {
+            "$ref": "#/components/schemas/WebhookRetryConfig"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Request model for updating a webhook"
+      },
+      "WebhookDelivery": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Delivery ID",
+            "nullable": true
+          },
+          "eventType": {
+            "type": "string",
+            "description": "Event type",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "description": "Delivery status",
+            "nullable": true
+          },
+          "statusCode": {
+            "type": "integer",
+            "description": "HTTP status code received",
+            "format": "int32",
+            "nullable": true
+          },
+          "responseTimeMs": {
+            "type": "integer",
+            "description": "Response time in milliseconds",
+            "format": "int64"
+          },
+          "deliveryDate": {
+            "type": "string",
+            "description": "Delivery timestamp",
+            "format": "date-time"
+          },
+          "retryAttempt": {
+            "type": "integer",
+            "description": "Retry attempt number",
+            "format": "int32"
+          },
+          "errorMessage": {
+            "type": "string",
+            "description": "Error message if delivery failed",
+            "nullable": true
+          },
+          "eventPayload": {
+            "type": "string",
+            "description": "Event payload (truncated for security)",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Webhook delivery record"
+      },
+      "WebhookDetail": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique webhook identifier",
+            "nullable": true
+          },
+          "url": {
+            "type": "string",
+            "description": "Webhook endpoint URL",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "description": "Webhook status",
+            "nullable": true
+          },
+          "eventTypes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Event types subscribed to",
+            "nullable": true
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "Whether the webhook is active"
+          },
+          "createdDate": {
+            "type": "string",
+            "description": "Webhook creation date",
+            "format": "date-time"
+          },
+          "lastDeliveryDate": {
+            "type": "string",
+            "description": "Last delivery attempt date",
+            "format": "date-time",
+            "nullable": true
+          },
+          "successRate": {
+            "type": "number",
+            "description": "Success rate percentage",
+            "format": "double"
+          },
+          "description": {
+            "type": "string",
+            "description": "Description of the webhook",
+            "nullable": true
+          },
+          "retryConfig": {
+            "$ref": "#/components/schemas/WebhookRetryConfig"
+          },
+          "totalDeliveries": {
+            "type": "integer",
+            "description": "Total delivery attempts",
+            "format": "int32"
+          },
+          "successfulDeliveries": {
+            "type": "integer",
+            "description": "Successful deliveries",
+            "format": "int32"
+          },
+          "failedDeliveries": {
+            "type": "integer",
+            "description": "Failed deliveries",
+            "format": "int32"
+          },
+          "lastErrorMessage": {
+            "type": "string",
+            "description": "Last error message",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Detailed webhook information"
+      },
+      "WebhookResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique webhook identifier",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "description": "Webhook status",
+            "nullable": true
+          },
+          "createdDate": {
+            "type": "string",
+            "description": "Webhook creation timestamp",
+            "format": "date-time"
+          },
+          "secretMasked": {
+            "type": "string",
+            "description": "Secret key (masked)",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Webhook response model"
+      },
+      "WebhookRetryConfig": {
+        "type": "object",
+        "properties": {
+          "maxRetries": {
+            "type": "integer",
+            "description": "Maximum number of retry attempts",
+            "format": "int32"
+          },
+          "initialDelaySeconds": {
+            "type": "integer",
+            "description": "Initial retry delay in seconds",
+            "format": "int32"
+          },
+          "maxDelaySeconds": {
+            "type": "integer",
+            "description": "Maximum retry delay in seconds",
+            "format": "int32"
+          },
+          "backoffMultiplier": {
+            "type": "number",
+            "description": "Backoff multiplier",
+            "format": "double"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Webhook retry configuration"
+      },
+      "WebhookSummary": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique webhook identifier",
+            "nullable": true
+          },
+          "url": {
+            "type": "string",
+            "description": "Webhook endpoint URL",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "description": "Webhook status",
+            "nullable": true
+          },
+          "eventTypes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Event types subscribed to",
+            "nullable": true
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "Whether the webhook is active"
+          },
+          "createdDate": {
+            "type": "string",
+            "description": "Webhook creation date",
+            "format": "date-time"
+          },
+          "lastDeliveryDate": {
+            "type": "string",
+            "description": "Last delivery attempt date",
+            "format": "date-time",
+            "nullable": true
+          },
+          "successRate": {
+            "type": "number",
+            "description": "Success rate percentage",
+            "format": "double"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Webhook summary for list views"
+      },
+      "WebhookTestResult": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Whether the test was successful"
+          },
+          "statusCode": {
+            "type": "integer",
+            "description": "HTTP status code received",
+            "format": "int32",
+            "nullable": true
+          },
+          "responseTimeMs": {
+            "type": "integer",
+            "description": "Response time in milliseconds",
+            "format": "int64"
+          },
+          "errorMessage": {
+            "type": "string",
+            "description": "Error message if test failed",
+            "nullable": true
+          },
+          "testDate": {
+            "type": "string",
+            "description": "Test timestamp",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Webhook test result"
       }
     },
     "securitySchemes": {
-      "bearerAuth": {
-        "type": "http",
-        "scheme": "bearer"
+      "oauth2": {
+        "type": "oauth2",
+        "description": "OAuth2 Client Credentials. Use your client_id and client_secret to obtain a token.",
+        "flows": {
+          "clientCredentials": {
+            "tokenUrl": "https://test-zion-ext.partssource.com/qa/auth/connect/token",
+            "scopes": {
+              "platform-customer-api": "Access to Customer API"
+            }
+          }
+        }
       }
     }
   }

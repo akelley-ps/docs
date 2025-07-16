@@ -14,25 +14,24 @@
   "navigation": {
     "tabs": [
       {
-        "tab": "Guides",
+        "tab": "Documentation",
         "groups": [
           {
             "group": "Getting Started",
             "pages": [
-              "index",
-              "quickstart",
-              "development"
+              "index"
             ]
           },
           {
-            "group": "Essentials",
+            "group": "Core Concepts",
             "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/settings",
-              "essentials/navigation",
-              "essentials/reusable-snippets"
+              "core-concepts/overview"
+            ]
+          },
+          {
+            "group": "Integrations",
+            "pages": [
+              "integrations/webhooks"
             ]
           }
         ]
@@ -43,10 +42,10 @@
           {
             "group": "Getting Started",
             "pages": [
-              "rest-api/getting-started/introduction",
-              "rest-api/getting-started/authentication",
-              "rest-api/getting-started/errors",
-              "rest-api/getting-started/rate-limits"
+              "api-reference/getting-started/introduction",
+              "api-reference/getting-started/authentication",
+              "api-reference/getting-started/errors",
+              "api-reference/getting-started/rate-limits"
             ]
           },
           {

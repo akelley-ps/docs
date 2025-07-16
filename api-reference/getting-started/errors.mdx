@@ -1,0 +1,129 @@
+# Error Handling
+
+This guide explains how to handle errors when working with our API. Understanding error responses will help you build more robust applications.
+
+## HTTP Status Codes
+
+Our API uses standard HTTP status codes to indicate the success or failure of requests:
+
+### Success Codes
+- `200 OK` - Request successful
+- `201 Created` - Resource created successfully
+- `204 No Content` - Request successful, no content returned
+
+### Client Error Codes
+- `400 Bad Request` - Invalid request syntax or parameters
+- `401 Unauthorized` - Authentication required or failed
+- `403 Forbidden` - Access denied, insufficient permissions
+- `404 Not Found` - Resource not found
+- `409 Conflict` - Resource conflict (e.g., duplicate entry)
+- `422 Unprocessable Entity` - Request valid but cannot be processed
+- `429 Too Many Requests` - Rate limit exceeded
+
+### Server Error Codes
+- `500 Internal Server Error` - Unexpected server error
+- `502 Bad Gateway` - Gateway or proxy error
+- `503 Service Unavailable` - Service temporarily unavailable
+
+## Error Response Format
+
+All error responses follow a consistent JSON format:
+
+```json
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Invalid request parameters",
+    "details": {
+      "field": "email",
+      "reason": "Invalid email format"
+    },
+    "request_id": "req_1234567890abcdef",
+    "timestamp": "2024-01-15T10:30:00Z"
+  }
+}
+```
+
+### Error Response Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `code` | string | Machine-readable error code |
+| `message` | string | Human-readable error message |
+| `details` | object | Additional error context (optional) |
+| `request_id` | string | Unique identifier for debugging |
+| `timestamp` | string | When the error occurred |
+
+## Common Error Codes
+
+### Authentication Errors
+
+```json
+{
+  "error": {
+    "code": "UNAUTHORIZED",
+    "message": "Invalid or expired API key",
+    "details": {
+      "expired_at": "2024-01-15T09:00:00Z"
+    }
+  }
+}
+```
+
+### Validation Errors
+
+```json
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Request validation failed",
+    "details": {
+      "field": "email",
+      "reason": "Email format is invalid",
+      "value": "invalid-email"
+    }
+  }
+}
+```
+
+### Rate Limiting
+
+```json
+{
+  "error": {
+    "code": "RATE_LIMIT_EXCEEDED",
+    "message": "Rate limit exceeded",
+    "details": {
+      "limit": 1000,
+      "reset_time": "2024-01-15T11:00:00Z",
+      "retry_after": 3600
+    }
+  }
+}
+```
+
+### Resource Not Found
+
+```json
+{
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "User not found",
+    "details": {
+      "resource": "user",
+      "id": "user_123"
+    }
+  }
+}
+```
+
+## Getting Help
+
+If you encounter errors that aren't covered in this documentation:
+
+1. **Check the error details** - Look at the `details` field for specific information
+2. **Use the request ID** - Include the `request_id` when contacting support
+3. **Review our status page** - Check if there are known service issues
+4. **Contact support** - Reach out with the error details and request ID
+
+For more information, see our [API Reference](/api-reference/) or [Support Documentation](../../support/).
