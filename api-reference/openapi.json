@@ -19,14 +19,216 @@
     }
   ],
   "paths": {
-    "/plants": {
+    "/api/v1/Assets": {
       "get": {
-        "description": "Returns all plants from the system that the user has access to",
+        "tags": [
+          "Assets"
+        ],
+        "summary": "Retrieve customer assets with optional date filtering",
         "parameters": [
           {
-            "name": "limit",
+            "name": "modifiedSince",
             "in": "query",
-            "description": "The maximum number of results to return",
+            "description": "Filter assets modified after this date (optional). Format: ISO 8601 (e.g., 2024-01-01T00:00:00Z)",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "example": "2024-01-01T00:00:00Z"
+          },
+          {
+            "name": "modifiedBefore",
+            "in": "query",
+            "description": "Filter assets modified before this date (optional). Format: ISO 8601 (e.g., 2024-12-31T23:59:59Z)",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "example": "2024-12-31T23:59:59Z"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the list of assets",
+            "content": {
+              "text/plain; version=1.0": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Asset"
+                  }
+                }
+              },
+              "application/json; version=1.0": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Asset"
+                  }
+                }
+              },
+              "text/json; version=1.0": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Asset"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid parameters"
+          },
+          "401": {
+            "description": "Invalid or missing customer ID"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Assets"
+        ],
+        "summary": "Create a new asset record in the system (where allowed)",
+        "requestBody": {
+          "description": "The asset creation request",
+          "content": {
+            "application/json; version=1.0": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAssetRequest"
+              }
+            },
+            "text/json; version=1.0": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAssetRequest"
+              }
+            },
+            "application/*+json; version=1.0": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAssetRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain; version=1.0": {
+                "schema": {
+                  "$ref": "#/components/schemas/Asset"
+                }
+              },
+              "application/json; version=1.0": {
+                "schema": {
+                  "$ref": "#/components/schemas/Asset"
+                }
+              },
+              "text/json; version=1.0": {
+                "schema": {
+                  "$ref": "#/components/schemas/Asset"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Asset created successfully"
+          },
+          "400": {
+            "description": "Invalid asset data"
+          },
+          "401": {
+            "description": "Invalid or missing customer ID"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/api/v1/Assets/changes": {
+      "get": {
+        "tags": [
+          "Assets"
+        ],
+        "summary": "Return a delta set of assets modified within a given date range",
+        "parameters": [
+          {
+            "name": "modifiedSince",
+            "in": "query",
+            "description": "Filter assets modified after this date (required). Format: ISO 8601 (e.g., 2024-01-01T00:00:00Z)",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "modifiedBefore",
+            "in": "query",
+            "description": "Filter assets modified before this date (optional). Format: ISO 8601 (e.g., 2024-12-31T23:59:59Z)",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the delta set of assets",
+            "content": {
+              "text/plain; version=1.0": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AssetChange"
+                  }
+                }
+              },
+              "application/json; version=1.0": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AssetChange"
+                  }
+                }
+              },
+              "text/json; version=1.0": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AssetChange"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid parameters"
+          },
+          "401": {
+            "description": "Invalid or missing customer ID"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/api/v1/Assets/{id}": {
+      "get": {
+        "tags": [
+          "Assets"
+        ],
+        "summary": "Retrieve detailed information about a specific asset",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The asset ID",
+            "required": true,
             "schema": {
               "type": "integer",
               "format": "int32"
@@ -35,96 +237,105 @@
         ],
         "responses": {
           "200": {
-            "description": "Plant response",
+            "description": "Returns the detailed asset",
             "content": {
-              "application/json": {
+              "text/plain; version=1.0": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Plant"
-                  }
+                  "$ref": "#/components/schemas/Asset"
+                }
+              },
+              "application/json; version=1.0": {
+                "schema": {
+                  "$ref": "#/components/schemas/Asset"
+                }
+              },
+              "text/json; version=1.0": {
+                "schema": {
+                  "$ref": "#/components/schemas/Asset"
                 }
               }
             }
           },
-          "400": {
-            "description": "Unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
+          "404": {
+            "description": "Asset not found"
+          },
+          "401": {
+            "description": "Invalid or missing customer ID"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         }
       },
-      "post": {
-        "description": "Creates a new plant in the store",
-        "requestBody": {
-          "description": "Plant to add to the store",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/NewPlant"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "plant response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Plant"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/plants/{id}": {
-      "delete": {
-        "description": "Deletes a single plant based on the ID supplied",
+      "put": {
+        "tags": [
+          "Assets"
+        ],
+        "summary": "Update metadata or status of an existing asset",
         "parameters": [
           {
             "name": "id",
             "in": "path",
-            "description": "ID of plant to delete",
+            "description": "The asset ID",
             "required": true,
             "schema": {
               "type": "integer",
-              "format": "int64"
+              "format": "int32"
             }
           }
         ],
+        "requestBody": {
+          "description": "The asset update request",
+          "content": {
+            "application/json; version=1.0": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAssetRequest"
+              }
+            },
+            "text/json; version=1.0": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAssetRequest"
+              }
+            },
+            "application/*+json; version=1.0": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAssetRequest"
+              }
+            }
+          }
+        },
         "responses": {
-          "204": {
-            "description": "Plant deleted",
-            "content": {}
-          },
-          "400": {
-            "description": "unexpected error",
+          "200": {
+            "description": "Asset updated successfully",
             "content": {
-              "application/json": {
+              "text/plain; version=1.0": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "$ref": "#/components/schemas/Asset"
+                }
+              },
+              "application/json; version=1.0": {
+                "schema": {
+                  "$ref": "#/components/schemas/Asset"
+                }
+              },
+              "text/json; version=1.0": {
+                "schema": {
+                  "$ref": "#/components/schemas/Asset"
                 }
               }
             }
+          },
+          "400": {
+            "description": "Invalid asset data"
+          },
+          "404": {
+            "description": "Asset not found"
+          },
+          "401": {
+            "description": "Invalid or missing customer ID"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         }
       }
@@ -154,56 +365,116 @@
   },
   "components": {
     "schemas": {
-      "Plant": {
-        "required": [
-          "name"
-        ],
+      "Asset": {
         "type": "object",
         "properties": {
-          "name": {
-            "description": "The name of the plant",
-            "type": "string"
-          },
-          "tag": {
-            "description": "Tag to specify the type",
-            "type": "string"
-          }
-        }
-      },
-      "NewPlant": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/Plant"
-          },
-          {
-            "required": [
-              "id"
-            ],
-            "type": "object",
-            "properties": {
-              "id": {
-                "description": "Identification number of the plant",
-                "type": "integer",
-                "format": "int64"
-              }
-            }
-          }
-        ]
-      },
-      "Error": {
-        "required": [
-          "error",
-          "message"
-        ],
-        "type": "object",
-        "properties": {
-          "error": {
+          "id": {
             "type": "integer",
-            "format": "int32"
+            "description": "Unique identifier for the asset",
+            "format": "int32",
+            "example": 1001
           },
-          "message": {
-            "type": "string"
+          "lastChangedDate": {
+            "type": "string",
+            "description": "Last modification date of the asset",
+            "format": "date-time",
+            "example": "2025-07-11T09:10:54Z"
+          },
+          "contractNumber": {
+            "maxLength": 50,
+            "type": "string",
+            "description": "Contract number associated with the asset",
+            "example": "CONTRACT-2024-001"
+          },
+          "psAssetId": {
+            "maxLength": 50,
+            "type": "string",
+            "description": "PS Asset ID for the asset",
+            "example": "ASSET-001"
+          },
+          "serialNumber": {
+            "maxLength": 100,
+            "type": "string",
+            "description": "Serial number of the asset",
+            "example": "SN-123456789"
+          },
+          "pmsPerYear": {
+            "maximum": 365,
+            "minimum": 0,
+            "type": "integer",
+            "description": "Number of preventive maintenance visits per year",
+            "format": "int32",
+            "example": 4
+          },
+          "lastPmDate": {
+            "type": "string",
+            "description": "Date of the last preventive maintenance visit",
+            "format": "date-time",
+            "nullable": true,
+            "example": "2025-06-16T09:10:54Z"
+          },
+          "coverageStartDate": {
+            "type": "string",
+            "description": "Start date of asset coverage",
+            "format": "date-time",
+            "example": "2024-01-01T00:00:00Z"
+          },
+          "coverageEndDate": {
+            "type": "string",
+            "description": "End date of asset coverage",
+            "format": "date-time",
+            "example": "2025-12-31T23:59:59Z"
+          },
+          "annualCost": {
+            "minimum": 0,
+            "type": "number",
+            "description": "Annual cost of the asset",
+            "format": "decimal",
+            "example": 25000
+          },
+          "customFields": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "description": "Custom field value (string, number, boolean, date, or enum)"
+            },
+            "description": "Customer-specific custom fields. Use /api/schemas/custom-fields/asset to discover available fields for your customer. This extensible system supports multiple entity types (asset, customer, contract, etc.) with entity-specific validation rules.",
+            "example": {
+              "note": "Use /api/schemas/custom-fields/asset to see your specific asset fields"
+            }
+          },
+          "documents": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Document"
+            },
+            "description": "Documents associated with the asset"
           }
+        },
+        "additionalProperties": false,
+        "description": "Asset entity with core fields and extensible customer-specific custom fields. Core fields (id, contractNumber, serialNumber, etc.) are always present. Custom fields vary by customer and can be discovered using the /api/schemas/custom-fields/asset endpoint. This system supports multiple entity types with entity-specific custom field schemas.",
+        "example": {
+          "id": 1001,
+          "lastChangedDate": "2025-07-11T09:10:54Z",
+          "contractNumber": "CONTRACT-2024-001",
+          "psAssetId": "ASSET-001",
+          "serialNumber": "SN-123456789",
+          "pmsPerYear": 4,
+          "lastPmDate": "2025-06-16T09:10:54Z",
+          "coverageStartDate": "2024-01-01T00:00:00Z",
+          "coverageEndDate": "2025-12-31T23:59:59Z",
+          "annualCost": 25000,
+          "customFields": {
+            "note": "Use /api/schemas/custom-fields/asset to discover your specific asset custom fields"
+          },
+          "documents": [
+            {
+              "id": "DOC-001",
+              "documentType": "service report",
+              "fileName": "service-report-001.pdf",
+              "createdDate": "2025-07-09T09:10:54Z"
+            }
+          ]
         }
       }
     },
